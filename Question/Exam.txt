@@ -1,0 +1,96 @@
+class T02Led10(models.Model):
+    division = models.ForeignKey(T01Div10, models.PROTECT, db_column='IdDiv', null=True)
+    contact = models.ForeignKey('T02Cnt10', models.SET_NULL, db_column='IdCnt', null=True, blank=True)
+    first_name = models.CharField(db_column='sNameF', max_length=255, blank=True)
+    last_name = models.CharField(db_column='sNameL', max_length=255, blank=True)
+    email = models.CharField(db_column='eEmail', max_length=500, null=True, blank=True)
+    phone = models.CharField(db_column='sPhone', max_length=500)
+    language = models.ForeignKey(T01Lan10, models.SET_NULL, db_column='IdLan', null=True, blank=True)
+    lead_status = models.ForeignKey(LeadStatusMaster, on_delete=models.SET_NULL, related_name='leads', null=True,
+                                    blank=True)
+    lead_category = models.ForeignKey(LeadCatMaster, on_delete=models.SET_NULL, related_name='leads', null=True,
+                                      blank=True)
+    lead_source = models.ForeignKey('T02Evt10', models.SET_NULL, db_column='IdEvt', null=True, blank=True)  # From event
+    pipeline = models.ForeignKey('T02Pil10', models.SET_NULL, db_column='IdPil', null=True, blank=True)
+    city = models.CharField(db_column='sCity', max_length=40, blank=True)
+    country = models.CharField(db_column='sCountry', max_length=40, blank=True)
+    website = models.CharField(db_column='sWebsite', max_length=60, blank=True)
+    description = models.TextField(db_column='tDesc', blank=True)
+    assigned_to = models.ForeignKey(T01Slm10, models.SET_NULL, db_column='IdSlm', null=True, blank=True,
+                                    related_name='assigned_to')
+    opportunity_amount = models.TextField(db_column='oppAmt', blank=True, null=True)
+    generated_by = models.CharField(db_column='sGenBy', max_length=80, blank=True)
+    created_on = models.DateTimeField(db_column='dCreatedOn', auto_now_add=True)
+    enquiry_type = models.CharField(db_column='sEnqType', max_length=40, blank=True)
+    IND_CHOICE = (("ADVERTISING", "ADVERTISING"),
+                  ("REAL_ESTATE", "REAL_ESTATE"),
+                  ("RETAIL", "RETAIL"),
+                  ("AUTOMOTIVE", "AUTOMOTIVE"),
+                  ("BANKING", "BANKING"),
+                  ("CONTRACTING", "CONTRACTING"),
+                  ("DISTRIBUTOR", "DISTRIBUTOR"),
+                  ("SERVICES", "SERVICES"),
+                  ("OTHERS", "OTHERS"))
+    industry = models.CharField(db_column='sIndstry', max_length=20, choices=IND_CHOICE, blank=True)
+
+    MRK_CHOICE = (("OFF PLAN", "OFF PLAN"),
+                  ("SECONDARY", "SECONDARY"))
+    market_choice = models.CharField(db_column='mChoice', max_length=20, choices=MRK_CHOICE, blank=True)
+
+    is_contact = models.BooleanField(db_column='bIsContact', default=False)
+    contact_persons = models.ManyToManyField(ContactPerson, related_name='leads', blank=True)
+    primary_mobile = models.CharField(db_column='primaryPhone', max_length=1000, blank=True)
+    secondary_mobile = models.CharField(db_column='secondaryPhone', max_length=1000, blank=True)
+    date_of_birth = models.DateField(db_column='dateOfBirth', blank=True, null=True)
+
+    last_rotation_time = models.DateTimeField(null=True, blank=True)
+    has_deal = models.BooleanField(db_column='bHasDeal', default=False, blank=True, null=True)
+    has_multiple = models.BooleanField(db_column='bHasMultipleDeal', default=False, blank=True, null=True)
+
+    history = HistoricalRecords()
+
+    class Meta:
+        db_table = 'T02LED10'
+        verbose_name = 'b1.Lead'
+
+
+class T02Tsk10(models.Model):
+    task_name = models.CharField(db_column='sTaskName', max_length=255, null=True)
+    division = models.ForeignKey(T01Div10, models.PROTECT, db_column='IdDiv', null=True)
+    opportunity = models.ForeignKey(T02Opp10, models.CASCADE, related_name='tasks', db_column='IdOpp', null=True)
+    lead = models.ForeignKey(T02Led10, models.CASCADE, db_column='IdLed', null=True)
+    STATUS_CHOICES = (
+        ("New", "New"),
+        ("In Progress", "In Progress"),
+        ("Completed", "Completed"),
+    )
+    PRIORITY_CHOICES = (("Low", "Low"), ("Medium", "Medium"), ("High", "High"))
+    TASKTYPE_CHOICES = (
+        ("call", "Call"),
+        ("telephone call", "TelePhone Call"),
+        ("email", "Email"),
+        ("visit", "Visit"),
+        ("meeting", "Meeting"),
+        ("demo", "Demo"),
+    )
+    task_date = models.DateTimeField(db_column='dTskDt', blank=True, null=True)  # default current date
+    task_type = models.CharField(db_column='sTskType', max_length=25, choices=TASKTYPE_CHOICES)
+    task_notes = models.TextField(db_column='tTskNts', max_length=255, blank=True, null=True)
+    status = models.CharField(db_column='sStatus', max_length=25, choices=STATUS_CHOICES)
+    priority = models.CharField(db_column='sPriorty', max_length=25, choices=PRIORITY_CHOICES)
+    due_date = models.DateTimeField(db_column='dduedt', blank=True, null=True)
+    created_on = models.DateTimeField(db_column='dtCreatedOn', auto_now_add=True)
+    event_link = models.TextField(db_column='sEvtLink', blank=True, null=True)
+    event_id = models.TextField(db_column='sEvtId', blank=True, null=True)
+    gmail_link = models.TextField(null=True, blank=True)
+    creator = models.ForeignKey(User, models.PROTECT, db_column='IdUser', null=True, blank=True)
+    history = HistoricalRecords()
+
+    class Meta:
+        db_table = 'T02TSK10'
+        verbose_name = 'b3.Task'
+
+    def __str__(self):
+        return self.task_type
+
+
